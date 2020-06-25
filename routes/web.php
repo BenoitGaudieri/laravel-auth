@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,9 +15,19 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
-});
+    return view('guest.welcome');
+})->name("home");
 
 Auth::routes();
 
-Route::get('/home', 'HomeController@index')->name('home');
+// Guest route
+Route::get("posts", "PostController@index")->name("post.index");
+
+
+// Admin route with authentication and middleware
+Route::prefix("admin")
+    ->namespace("Admin")
+    ->middleware("auth")
+    ->group(function () {
+        Route::get('/home', 'HomeController@index')->name('admin.home');
+    });
