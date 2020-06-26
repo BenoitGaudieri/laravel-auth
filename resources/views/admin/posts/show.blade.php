@@ -19,11 +19,11 @@
     <p>{{ $post->body }}</p>
     <span class="created font-weight-light font-italic">Created at: </span> 
     <span class="created font-weight-light">
-        {{ $post->created_at }}
+        {{ $post->created_at->format("d/m/Y") }}
     </span>
-    <span class="updated font-weight-light font-italic">Updated last time at: </span> 
+    <span class="updated font-weight-light font-italic">Updated last time: </span> 
     <span class="updated font-weight-light">
-        {{ $post->updated_at }}
+        {{ $post->updated_at->diffForHumans() }}
     </span>
    
 
