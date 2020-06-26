@@ -19,6 +19,9 @@
                     <li class="nav-item">
                         <a href="{{ route("home") }}" class="nav-link">Home</a>
                     </li>
+                    <li class="nav-item">
+                        <a href="{{ route("admin.posts.create") }}" class="nav-link">New Post</a>
+                    </li>
 
                 </ul>
 

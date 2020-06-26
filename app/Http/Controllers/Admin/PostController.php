@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Str;
 
 class PostController extends Controller
 {
@@ -31,7 +31,7 @@ class PostController extends Controller
      */
     public function create()
     {
-        //
+        return view("admin.posts.create");
     }
 
     /**
@@ -42,7 +42,20 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate($this->validationRules());
+
+        $data = $request->all();
+
+        $data["user_id"] = Auth::id();
+        $data["slug"] = Str::slug($data["title"], "-");
+
+        $newPost = new Post();
+        $newPost->fill($data);
+        $saved = $newPost->save();
+
+        if ($saved) {
+            return redirect()->route("admin.posts.show", $newPost->id);
+        }
     }
 
     /**
@@ -51,9 +64,9 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Post $post)
     {
-        //
+        return view("admin.posts.show", compact("post"));
     }
 
     /**
@@ -62,9 +75,9 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(Post $post)
     {
-        //
+        return view("admin.posts.edit", compact("post"));
     }
 
     /**
@@ -74,9 +87,17 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Post $post)
     {
-        //
+        $request->validate($this->validationRules());
+
+        $data = $request->all();
+        $data["slug"] = Str::slug($data["title"], "-");
+        $updated = $post->update($data);
+
+        if ($updated) {
+            return redirect()->route("admin.posts.show", $post->id);
+        }
     }
 
     /**
@@ -85,8 +106,28 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Post $post)
     {
-        //
+        if (empty($post)) {
+            abort("404");
+        }
+
+        $title = $post->title;
+        $deleted = $post->delete();
+
+        if ($deleted) {
+            return redirect()->route("admin.posts.index")->with("post-deleted", $title);
+        }
+    }
+
+    /**
+     * Validation rules
+     */
+    private function validationRules()
+    {
+        return [
+            "title" => "required",
+            "body" => "required"
+        ];
     }
 }
