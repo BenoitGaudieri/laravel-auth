@@ -21,13 +21,15 @@ Route::get('/', function () {
 Auth::routes();
 
 // Guest route
-Route::get("posts", "PostController@index")->name("post.index");
+Route::get("posts", "PostController@index")->name("posts.index");
 
 
 // Admin route with authentication and middleware
 Route::prefix("admin")
+    ->name("admin.")
     ->namespace("Admin")
     ->middleware("auth")
     ->group(function () {
-        Route::get('/home', 'HomeController@index')->name('admin.home');
+        Route::get('/home', 'HomeController@index')->name('home');
+        Route::resource('posts', 'PostController');
     });
