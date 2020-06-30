@@ -3,10 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\NewPost;
 use App\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+
+
 
 class PostController extends Controller
 {
@@ -49,11 +54,20 @@ class PostController extends Controller
         $data["user_id"] = Auth::id();
         $data["slug"] = Str::slug($data["title"], "-");
 
+        // IMG STORAGE
+        // set the image
+        if (!empty($data["path_img"])) {
+            $data["path_img"] = Storage::disk("public")->put("images", $data["path_img"]);
+        }
+
         $newPost = new Post();
         $newPost->fill($data);
         $saved = $newPost->save();
 
         if ($saved) {
+            // Send email
+            Mail::to("user@test.it")->send(new NewPost($newPost));
+
             return redirect()->route("admin.posts.show", $newPost->id);
         }
     }
@@ -93,6 +107,19 @@ class PostController extends Controller
 
         $data = $request->all();
         $data["slug"] = Str::slug($data["title"], "-");
+
+        // IMG UPDATE
+        if (!empty($data["path_img"])) {
+
+            // delete previous img:
+            if (!empty($post->path_img)) {
+                Storage::disk("public")->delete($post->path_img);
+            }
+
+            // set new img:
+            $data["path_img"] = Storage::disk("public")->put("images", $data["path_img"]);
+        }
+
         $updated = $post->update($data);
 
         if ($updated) {
@@ -113,9 +140,15 @@ class PostController extends Controller
         }
 
         $title = $post->title;
+
         $deleted = $post->delete();
 
         if ($deleted) {
+            // remove img
+            if (!empty($post->path_img)) {
+                Storage::disk("public")->delete($post->path_img);
+            }
+
             return redirect()->route("admin.posts.index")->with("post-deleted", $title);
         }
     }
@@ -127,7 +160,8 @@ class PostController extends Controller
     {
         return [
             "title" => "required",
-            "body" => "required"
+            "body" => "required",
+            "path_img" => "image"
         ];
     }
 }

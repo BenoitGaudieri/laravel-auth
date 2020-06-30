@@ -25,6 +25,15 @@
     <span class="updated font-weight-light">
         {{ $post->updated_at->diffForHumans() }}
     </span>
+
+    <h3>Post Image</h3>
+    @if (!empty($post->path_img))
+        <img src="{{ asset("storage/" . $post->path_img) }}" alt="{{ $post->title }}">
+    @else
+        <div class="no-img-text">
+            No image selected
+        </div>
+    @endif
    
 
 </div>
